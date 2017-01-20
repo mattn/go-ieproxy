@@ -56,6 +56,13 @@ func getProxy() {
 						if u != nil {
 							httpsProxy = u
 						}
+					} else if !strings.Contains(setting, "=") {
+						// without XXX= prefix, it is setting for all schemes
+						u = safeParseURL(setting)
+						if u != nil {
+							httpProxy = u
+							httpsProxy = u
+						}
 					}
 				}
 			}
