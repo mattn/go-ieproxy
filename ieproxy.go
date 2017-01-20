@@ -2,9 +2,13 @@ package ieproxy
 
 // StaticProxyConf containes the Windows configuration for static proxy
 type StaticProxyConf struct {
-	Active    bool              // is the proxy active
-	Protocols map[string]string // proxy address for each scheme (http, https). "" is the fallback proxy
-	NoProxy   string            // addresses not to be browsed via the proxy (comma-separated, like linux)
+	// Is the proxy active?
+	Active bool
+	// Proxy address for each scheme (http, https)
+	// "" (empty string) is the fallback proxy
+	Protocols map[string]string
+	// Addresses not to be browsed via the proxy (comma-separated, like linux)
+	NoProxy string
 }
 
 // AutomaticProxyConf contains the Windows configuration for automatic proxy
@@ -24,7 +28,7 @@ func GetConf() WindowsProxyConf {
 }
 
 // OverrideEnvWithStaticProxy writes new values to the
-// http_proxy, https_proxy and no_proxy environment variables.
-// The values are taken from the Windows Regedit (should be called in init() function)
+// `http_proxy`, `https_proxy` and `no_proxy` environment variables.
+// The values are taken from the Windows Regedit (should be called in `init()` function - see example)
 func OverrideEnvWithStaticProxy() {
 }
