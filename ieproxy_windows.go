@@ -1,5 +1,3 @@
-// +build windows
-
 package ieproxy
 
 import (
@@ -21,7 +19,7 @@ var once sync.Once
 var windowsProxyConf WindowsProxyConf
 
 // GetConf retrieves the proxy configuration from the Windows Regedit
-func GetConf() WindowsProxyConf {
+func getConf() WindowsProxyConf {
 	once.Do(parseRegedit)
 	return windowsProxyConf
 }
@@ -29,7 +27,7 @@ func GetConf() WindowsProxyConf {
 // OverrideEnvWithStaticProxy writes new values to the
 // http_proxy, https_proxy and no_proxy environment variables.
 // The values are taken from the Windows Regedit (should be called in init() function)
-func OverrideEnvWithStaticProxy() {
+func overrideEnvWithStaticProxy() {
 	conf := GetConf()
 	if conf.Static.Active {
 		for _, scheme := range []string{"http", "https"} {

@@ -24,11 +24,12 @@ type WindowsProxyConf struct {
 
 // GetConf retrieves the proxy configuration from the Windows Regedit
 func GetConf() WindowsProxyConf {
-	return WindowsProxyConf{}
+	return getConf()
 }
 
 // OverrideEnvWithStaticProxy writes new values to the
 // `http_proxy`, `https_proxy` and `no_proxy` environment variables.
 // The values are taken from the Windows Regedit (should be called in `init()` function - see example)
 func OverrideEnvWithStaticProxy() {
+	overrideEnvWithStaticProxy()
 }
