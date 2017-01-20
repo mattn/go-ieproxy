@@ -21,6 +21,9 @@ var (
 )
 
 func safeParseURL(s string) *url.URL {
+	if s == "" {
+		return nil
+	}
 	if !strings.HasPrefix(s, "http") {
 		s = "http://" + s
 	}
