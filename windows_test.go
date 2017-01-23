@@ -184,7 +184,7 @@ func TestOverrideEnv(t *testing.T) {
 }
 
 func TestPacfile(t *testing.T) {
-	listener, err := ListenAndServeWithClose("127.0.0.1:0", http.FileServer(http.Dir("pacfile_examples")))
+	listener, err := listenAndServeWithClose("127.0.0.1:0", http.FileServer(http.Dir("pacfile_examples")))
 	serverBase := "http://" + listener.Addr().String() + "/"
 	if err != nil {
 		t.Fatal(err)
