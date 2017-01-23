@@ -190,6 +190,17 @@ func TestPacfile(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// test inactive proxy
+	proxy := AutomaticProxyConf{
+		Active: false,
+		URL:    serverBase + "simple.pac",
+	}
+	out := proxy.FindProxyForURL("http://google.com")
+	if out != "" {
+		t.Error("Got: ", out, "Expected: ", "")
+	}
+	proxy.Active = true
+
 	pacSet := []struct {
 		pacfile  string
 		url      string
@@ -227,10 +238,7 @@ func TestPacfile(t *testing.T) {
 		},
 	}
 	for _, p := range pacSet {
-		proxy := AutomaticProxyConf{
-			Active: true,
-			URL:    serverBase + p.pacfile,
-		}
+		proxy.URL = serverBase + p.pacfile
 		out := proxy.FindProxyForURL(p.url)
 		if out != p.expected {
 			t.Error("Got: ", out, "Expected: ", p.expected)
