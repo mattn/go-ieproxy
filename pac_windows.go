@@ -6,28 +6,28 @@ import (
 	"unsafe"
 )
 
-type WINHTTP_AUTOPROXY_OPTIONS struct {
-	dwFlags                AutoProxyFlag
+type tWINHTTP_AUTOPROXY_OPTIONS struct {
+	dwFlags                autoProxyFlag
 	dwAutoDetectFlags      uint32
 	lpszAutoConfigUrl      *uint16
 	lpvReserved            *uint16
 	dwReserved             uint32
 	fAutoLogonIfChallenged bool
 }
-type AutoProxyFlag uint32
+type autoProxyFlag uint32
 
 const (
-	WINHTTP_AUTOPROXY_AUTO_DETECT         = AutoProxyFlag(0x00000001)
-	WINHTTP_AUTOPROXY_CONFIG_URL          = AutoProxyFlag(0x00000002)
-	WINHTTP_AUTOPROXY_NO_CACHE_CLIENT     = AutoProxyFlag(0x00080000)
-	WINHTTP_AUTOPROXY_NO_CACHE_SVC        = AutoProxyFlag(0x00100000)
-	WINHTTP_AUTOPROXY_NO_DIRECTACCESS     = AutoProxyFlag(0x00040000)
-	WINHTTP_AUTOPROXY_RUN_INPROCESS       = AutoProxyFlag(0x00010000)
-	WINHTTP_AUTOPROXY_RUN_OUTPROCESS_ONLY = AutoProxyFlag(0x00020000)
-	WINHTTP_AUTOPROXY_SORT_RESULTS        = AutoProxyFlag(0x00400000)
+	fWINHTTP_AUTOPROXY_AUTO_DETECT         = autoProxyFlag(0x00000001)
+	fWINHTTP_AUTOPROXY_CONFIG_URL          = autoProxyFlag(0x00000002)
+	fWINHTTP_AUTOPROXY_NO_CACHE_CLIENT     = autoProxyFlag(0x00080000)
+	fWINHTTP_AUTOPROXY_NO_CACHE_SVC        = autoProxyFlag(0x00100000)
+	fWINHTTP_AUTOPROXY_NO_DIRECTACCESS     = autoProxyFlag(0x00040000)
+	fWINHTTP_AUTOPROXY_RUN_INPROCESS       = autoProxyFlag(0x00010000)
+	fWINHTTP_AUTOPROXY_RUN_OUTPROCESS_ONLY = autoProxyFlag(0x00020000)
+	fWINHTTP_AUTOPROXY_SORT_RESULTS        = autoProxyFlag(0x00400000)
 )
 
-type WINHTTP_PROXY_INFO struct {
+type tWINHTTP_PROXY_INFO struct {
 	dwAccessType    uint32
 	lpszProxy       *uint16
 	lpszProxyBypass *uint16
@@ -66,8 +66,8 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 
 	getProxyForUrl := winHttp.NewProc("WinHttpGetProxyForUrl")
 
-	options := WINHTTP_AUTOPROXY_OPTIONS{
-		dwFlags:                WINHTTP_AUTOPROXY_CONFIG_URL + WINHTTP_AUTOPROXY_NO_CACHE_CLIENT + WINHTTP_AUTOPROXY_NO_CACHE_SVC,
+	options := tWINHTTP_AUTOPROXY_OPTIONS{
+		dwFlags:                fWINHTTP_AUTOPROXY_CONFIG_URL + fWINHTTP_AUTOPROXY_NO_CACHE_CLIENT + fWINHTTP_AUTOPROXY_NO_CACHE_SVC,
 		dwAutoDetectFlags:      0,
 		lpszAutoConfigUrl:      pacfileURLPtr,
 		lpvReserved:            nil,
@@ -75,7 +75,7 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 		fAutoLogonIfChallenged: true, // may not be optimal https://msdn.microsoft.com/en-us/library/windows/desktop/aa383153(v=vs.85).aspx
 	}
 
-	info := new(WINHTTP_PROXY_INFO)
+	info := new(tWINHTTP_PROXY_INFO)
 
 	ret, _, err := getProxyForUrl.Call(
 		handle,
