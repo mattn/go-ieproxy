@@ -139,6 +139,7 @@ func TestOverrideEnv(t *testing.T) {
 			in: ProxyConf{
 				Static: StaticProxyConf{
 					Active:    false,
+					NoProxy:   "example.com,microsoft.com",
 					Protocols: catchAllMap,
 				},
 			},
