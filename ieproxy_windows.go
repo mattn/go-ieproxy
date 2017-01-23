@@ -1,7 +1,6 @@
 package ieproxy
 
 import (
-	"os"
 	"strings"
 	"sync"
 
@@ -32,8 +31,7 @@ func writeConf() {
 // OverrideEnvWithStaticProxy writes new values to the
 // http_proxy, https_proxy and no_proxy environment variables.
 // The values are taken from the Windows Regedit (should be called in init() function)
-func overrideEnvWithStaticProxy() {
-	conf := getConf()
+func overrideEnvWithStaticProxy(conf ProxyConf, setenv envSetter) {
 	if conf.Static.Active {
 		for _, scheme := range []string{"http", "https"} {
 			url, ok := conf.Static.Protocols[scheme]
@@ -41,11 +39,11 @@ func overrideEnvWithStaticProxy() {
 				url, ok = conf.Static.Protocols[""] // fallback conf
 			}
 			if ok {
-				os.Setenv(scheme+"_proxy", url)
+				setenv(scheme+"_proxy", url)
 			}
 		}
 		if conf.Static.NoProxy != "" {
-			os.Setenv("no_proxy", conf.Static.NoProxy)
+			setenv("no_proxy", conf.Static.NoProxy)
 		}
 	}
 }

@@ -3,6 +3,8 @@
 // On windows, it gathers the parameters from the registry (regedit), while it uses env variable on other platforms
 package ieproxy
 
+import "os"
+
 // ProxyConf gathers the configuration for proxy
 type ProxyConf struct {
 	Static    StaticProxyConf    // static configuration
@@ -37,5 +39,7 @@ func GetConf() ProxyConf {
 // `http_proxy`, `https_proxy` and `no_proxy` environment variables.
 // The values are taken from the Windows Regedit (should be called in `init()` function - see example)
 func OverrideEnvWithStaticProxy() {
-	overrideEnvWithStaticProxy()
+	overrideEnvWithStaticProxy(getConf(), os.Setenv)
 }
+
+type envSetter func(string, string) error

@@ -6,5 +6,5 @@ func getConf() ProxyConf {
 	return ProxyConf{}
 }
 
-func overrideEnvWithStaticProxy() {
+func overrideEnvWithStaticProxy(pc ProxyConf, setenv envSetter) {
 }

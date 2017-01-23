@@ -7,18 +7,22 @@ import (
 	"testing"
 )
 
-func TestParseRegedit(t *testing.T) {
+var emptyMap, catchAllMap, multipleMap, multipleMapWithCatchAll map[string]string
 
-	emptyMap := make(map[string]string)
-	catchAllMap := make(map[string]string)
+func init() {
+	emptyMap = make(map[string]string)
+	catchAllMap = make(map[string]string)
 	catchAllMap[""] = "127.0.0.1"
-	multipleMap := make(map[string]string)
+	multipleMap = make(map[string]string)
 	multipleMap["http"] = "127.0.0.1"
 	multipleMap["ftp"] = "128"
-	multipleMapWithCatchAll := make(map[string]string)
+	multipleMapWithCatchAll = make(map[string]string)
 	multipleMapWithCatchAll["http"] = "127.0.0.1"
 	multipleMapWithCatchAll["ftp"] = "128"
 	multipleMapWithCatchAll[""] = "129"
+}
+
+func TestParseRegedit(t *testing.T) {
 
 	parsingSet := []struct {
 		in  regeditValues
@@ -104,6 +108,66 @@ func TestParseRegedit(t *testing.T) {
 		out := parseRegedit(p.in)
 		if !reflect.DeepEqual(p.out, out) {
 			t.Error("Got: ", out, "Expected: ", p.out)
+		}
+	}
+}
+
+func TestOverrideEnv(t *testing.T) {
+	var callStack []string
+	pseudoSetEnv := func(key, value string) error {
+		callStack = append(callStack, key)
+		callStack = append(callStack, value)
+		return nil
+	}
+	overrideSet := []struct {
+		in        ProxyConf
+		callStack []string
+	}{
+		{
+			callStack: []string{},
+		},
+		{
+			in: ProxyConf{
+				Static: StaticProxyConf{
+					Active:    true,
+					Protocols: catchAllMap,
+				},
+			},
+			callStack: []string{"http_proxy", "127.0.0.1", "https_proxy", "127.0.0.1"},
+		},
+		{
+			in: ProxyConf{
+				Static: StaticProxyConf{
+					Active:    false,
+					Protocols: catchAllMap,
+				},
+			},
+			callStack: []string{},
+		},
+		{
+			in: ProxyConf{
+				Static: StaticProxyConf{
+					Active:    true,
+					Protocols: multipleMap,
+				},
+			},
+			callStack: []string{"http_proxy", "127.0.0.1"},
+		},
+		{
+			in: ProxyConf{
+				Static: StaticProxyConf{
+					Active:    true,
+					Protocols: multipleMapWithCatchAll,
+				},
+			},
+			callStack: []string{"http_proxy", "127.0.0.1", "https_proxy", "129"},
+		},
+	}
+	for _, o := range overrideSet {
+		callStack = []string{}
+		overrideEnvWithStaticProxy(o.in, pseudoSetEnv)
+		if !reflect.DeepEqual(o.callStack, callStack) {
+			t.Error("Got: ", callStack, "Expected: ", o.callStack)
 		}
 	}
 }
