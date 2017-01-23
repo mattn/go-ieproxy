@@ -39,7 +39,7 @@ func GetConf() ProxyConf {
 // `http_proxy`, `https_proxy` and `no_proxy` environment variables.
 // The values are taken from the Windows Regedit (should be called in `init()` function - see example)
 func OverrideEnvWithStaticProxy() {
-	overrideEnvWithStaticProxy(getConf(), os.Setenv)
+	overrideEnvWithStaticProxy(GetConf(), os.Setenv)
 }
 
 type envSetter func(string, string) error
