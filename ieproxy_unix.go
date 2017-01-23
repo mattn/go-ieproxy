@@ -2,8 +2,8 @@
 
 package ieproxy
 
-func getConf() WindowsProxyConf {
-	return WindowsProxyConf{}
+func getConf() ProxyConf {
+	return ProxyConf{}
 }
 
 func overrideEnvWithStaticProxy() {
