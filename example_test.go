@@ -32,6 +32,6 @@ func Example() {
 	} else {
 		fmt.Println("DIRECT")
 	}
-	// Output: == Proxy configuration ==
+	// Coming output: == Proxy configuration ==
 	// http_proxy: ...
 }
