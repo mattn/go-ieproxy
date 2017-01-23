@@ -11,7 +11,7 @@ type ProxyConf struct {
 	Automatic AutomaticProxyConf // automatic configuration
 }
 
-// StaticProxyConf containes the configuration for static proxy
+// StaticProxyConf contains the configuration for static proxy
 type StaticProxyConf struct {
 	// Is the proxy active?
 	Active bool

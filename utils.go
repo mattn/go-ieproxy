@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-// Convert a *uint16 C string to a Go String
+// StringFromUTF16Ptr converts a *uint16 C string to a Go String
 func StringFromUTF16Ptr(s *uint16) string {
 	if s == nil {
 		return ""
@@ -25,7 +25,8 @@ func StringFromUTF16Ptr(s *uint16) string {
 	return string(utf16.Decode(p[:sz:sz]))
 }
 
-func ListenAndServeWithClose(addr string, handler http.Handler) (net.Listener, error) {
+// for testing purposes
+func listenAndServeWithClose(addr string, handler http.Handler) (net.Listener, error) {
 
 	var (
 		listener net.Listener
