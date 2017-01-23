@@ -42,4 +42,9 @@ func OverrideEnvWithStaticProxy() {
 	overrideEnvWithStaticProxy(GetConf(), os.Setenv)
 }
 
+// FindProxyForURL computes the proxy for a given URL according to the pac file
+func (apc *AutomaticProxyConf) FindProxyForURL(URL string) string {
+	return apc.findProxyForURL(URL)
+}
+
 type envSetter func(string, string) error

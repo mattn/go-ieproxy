@@ -33,7 +33,7 @@ type WINHTTP_PROXY_INFO struct {
 	lpszProxyBypass *uint16
 }
 
-func (apc *AutomaticProxyConf) FindProxyForURL(URL string) string {
+func (apc *AutomaticProxyConf) findProxyForURL(URL string) string {
 	if !apc.Active {
 		return ""
 	}
