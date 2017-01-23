@@ -162,6 +162,15 @@ func TestOverrideEnv(t *testing.T) {
 			},
 			callStack: []string{"http_proxy", "127.0.0.1", "https_proxy", "129"},
 		},
+		{
+			in: ProxyConf{
+				Static: StaticProxyConf{
+					Active:  true,
+					NoProxy: "example.com,microsoft.com",
+				},
+			},
+			callStack: []string{"no_proxy", "example.com,microsoft.com"},
+		},
 	}
 	for _, o := range overrideSet {
 		callStack = []string{}
