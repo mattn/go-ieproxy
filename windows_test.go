@@ -3,6 +3,7 @@
 package ieproxy
 
 import (
+	"net/http"
 	"reflect"
 	"testing"
 )
@@ -180,4 +181,68 @@ func TestOverrideEnv(t *testing.T) {
 			t.Error("Got: ", callStack, "Expected: ", o.callStack)
 		}
 	}
+}
+
+func TestPacfile(t *testing.T) {
+	listener, err := listenAndServeWithClose("127.0.0.1:0", http.FileServer(http.Dir("pacfile_examples")))
+	serverBase := "http://" + listener.Addr().String() + "/"
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// test inactive proxy
+	proxy := AutomaticProxyConf{
+		Active: false,
+		URL:    serverBase + "simple.pac",
+	}
+	out := proxy.FindProxyForURL("http://google.com")
+	if out != "" {
+		t.Error("Got: ", out, "Expected: ", "")
+	}
+	proxy.Active = true
+
+	pacSet := []struct {
+		pacfile  string
+		url      string
+		expected string
+	}{
+		{
+			"direct.pac",
+			"http://google.com",
+			"",
+		},
+		{
+			"404.pac",
+			"http://google.com",
+			"",
+		},
+		{
+			"simple.pac",
+			"http://google.com",
+			"127.0.0.1:8",
+		},
+		{
+			"multiple.pac",
+			"http://google.com",
+			"127.0.0.1:8081",
+		},
+		{
+			"except.pac",
+			"http://imgur.com",
+			"localhost:9999",
+		},
+		{
+			"except.pac",
+			"http://example.com",
+			"",
+		},
+	}
+	for _, p := range pacSet {
+		proxy.URL = serverBase + p.pacfile
+		out := proxy.FindProxyForURL(p.url)
+		if out != p.expected {
+			t.Error("Got: ", out, "Expected: ", p.expected)
+		}
+	}
+	listener.Close()
 }

@@ -11,7 +11,7 @@ type ProxyConf struct {
 	Automatic AutomaticProxyConf // automatic configuration
 }
 
-// StaticProxyConf containes the configuration for static proxy
+// StaticProxyConf contains the configuration for static proxy
 type StaticProxyConf struct {
 	// Is the proxy active?
 	Active bool
@@ -40,6 +40,11 @@ func GetConf() ProxyConf {
 // The values are taken from the Windows Regedit (should be called in `init()` function - see example)
 func OverrideEnvWithStaticProxy() {
 	overrideEnvWithStaticProxy(GetConf(), os.Setenv)
+}
+
+// FindProxyForURL computes the proxy for a given URL according to the pac file
+func (apc *AutomaticProxyConf) FindProxyForURL(URL string) string {
+	return apc.findProxyForURL(URL)
 }
 
 type envSetter func(string, string) error
