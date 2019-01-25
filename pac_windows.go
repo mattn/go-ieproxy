@@ -67,7 +67,7 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 	getProxyForUrl := winHttp.NewProc("WinHttpGetProxyForUrl")
 
 	options := tWINHTTP_AUTOPROXY_OPTIONS{
-		dwFlags:                fWINHTTP_AUTOPROXY_CONFIG_URL + fWINHTTP_AUTOPROXY_NO_CACHE_CLIENT + fWINHTTP_AUTOPROXY_NO_CACHE_SVC,
+		dwFlags:                fWINHTTP_AUTOPROXY_CONFIG_URL, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
 		dwAutoDetectFlags:      0,
 		lpszAutoConfigUrl:      pacfileURLPtr,
 		lpvReserved:            nil,
