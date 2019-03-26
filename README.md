@@ -2,7 +2,7 @@
 
 Go package to detect the proxy settings on Windows platform.
 
-The settings are read from the registry (`CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings`).
+The settings are read from the registry (`CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings` or `LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Internet Settings` depending of `Computer Configuration\Administrative Templates\Windows Components\internet Explorer\Make proxy settings per-machine` policy)
 
 You can either get the settings via `GetConf` or set the environment variables via `OverrideEnvWithStaticProxy`.
 
