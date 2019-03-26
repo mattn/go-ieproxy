@@ -76,7 +76,25 @@ func parseRegedit(regedit regeditValues) ProxyConf {
 }
 
 func readRegedit() (values regeditValues, err error) {
-	k, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)
+	// Check config per user or per machine
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `Software\Policies\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)
+	if err != nil {
+		return
+	}
+	defer k.Close()
+	proxySettingsPerUser, _, err := k.GetIntegerValue("ProxySettingsPerUser")
+	if err != nil && err != registry.ErrNotExist {
+		return
+	}
+	var hkey registry.Key
+	if err == nil && proxySettingsPerUser == 0 {
+		hkey = registry.LOCAL_MACHINE
+	} else {
+		hkey = registry.CURRENT_USER
+	}
+	k.Close()
+
+	k, err = registry.OpenKey(hkey, `Software\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)
 	if err != nil {
 		return
 	}
