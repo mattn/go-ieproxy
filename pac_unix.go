@@ -2,6 +2,6 @@
 
 package ieproxy
 
-func (apc *ProxyScriptConf) findProxyForURL(URL string) string {
+func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	return ""
 }

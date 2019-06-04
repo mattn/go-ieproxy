@@ -7,8 +7,9 @@ import "os"
 
 // ProxyConf gathers the configuration for proxy
 type ProxyConf struct {
-	Static StaticProxyConf // static configuration
-	Script ProxyScriptConf // script configuration
+	Static    StaticProxyConf    // static configuration
+	Script    ProxyScriptConf    // script configuration
+	Automatic AutomaticProxyConf // automatic configuration
 }
 
 // StaticProxyConf contains the configuration for static proxy
@@ -30,6 +31,16 @@ type ProxyScriptConf struct {
 	URL string
 }
 
+type AutomaticProxyConf struct {
+	// Is the proxy active?
+	Active bool
+
+	/*
+		Note we have no proper way to detect if this *is* used.
+		The best thing to do is just to make a syscall and see what it returns.
+	*/
+}
+
 // GetConf retrieves the proxy configuration from the Windows Regedit
 func GetConf() ProxyConf {
 	return getConf()
@@ -43,7 +54,11 @@ func OverrideEnvWithStaticProxy() {
 }
 
 // FindProxyForURL computes the proxy for a given URL according to the pac file
-func (apc *ProxyScriptConf) FindProxyForURL(URL string) string {
+func (psc *ProxyScriptConf) FindProxyForURL(URL string) string {
+	return psc.findProxyForURL(URL)
+}
+
+func (apc *AutomaticProxyConf) FindProxyForURL(URL string) string {
 	return apc.findProxyForURL(URL)
 }
 

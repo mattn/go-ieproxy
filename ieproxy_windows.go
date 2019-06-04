@@ -26,6 +26,7 @@ func getConf() ProxyConf {
 func writeConf() {
 	regedit, _ := readRegedit()
 	windowsProxyConf = parseRegedit(regedit)
+	windowsProxyConf.Automatic.Active = usingWPAD()
 }
 
 // OverrideEnvWithStaticProxy writes new values to the

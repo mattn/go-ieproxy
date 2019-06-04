@@ -2,15 +2,35 @@ package ieproxy
 
 import (
 	"strings"
+	"net/http"
+	"net/url"
 	"syscall"
 	"unsafe"
 )
 
-func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
-	if !psc.Active {
+func usingWPAD() bool {
+	req := http.Request{
+		Method: "GET",
+		URL: &url.URL{
+			Scheme: "http",
+			Host:   "wpad",
+			Path:   "/wpad.dat", //Windows maps wpad to the auto discovered URL, which should contain wpad.dat
+		},
+	}
+	resp, err := http.DefaultClient.Do(&req)
+
+	if err != nil {
+		return false
+	}
+
+	return resp.StatusCode == 200 //If we can't obtain it in the first place, there's no point in activating WPAD.
+}
+
+func (apc *AutomaticProxyConf) findProxyForURL(URL string) string {
+	if !apc.Active {
 		return ""
 	}
-	proxy, _ := getProxyForURL(psc.URL, URL)
+	proxy, _ := getAutoProxyForURL(URL)
 	i := strings.Index(proxy, ";")
 	if i >= 0 {
 		return proxy[:i]
@@ -18,11 +38,7 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	return proxy
 }
 
-func getProxyForURL(pacfileURL, URL string) (string, error) {
-	pacfileURLPtr, err := syscall.UTF16PtrFromString(pacfileURL)
-	if err != nil {
-		return "", err
-	}
+func getAutoProxyForURL(URL string) (string, error) {
 	URLPtr, err := syscall.UTF16PtrFromString(URL)
 	if err != nil {
 		return "", err
@@ -40,9 +56,9 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 	getProxyForUrl := winHttp.NewProc("WinHttpGetProxyForUrl")
 
 	options := tWINHTTP_AUTOPROXY_OPTIONS{
-		dwFlags:                fWINHTTP_AUTOPROXY_CONFIG_URL, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
-		dwAutoDetectFlags:      0,
-		lpszAutoConfigUrl:      pacfileURLPtr,
+		dwFlags:                fWINHTTP_AUTOPROXY_AUTO_DETECT, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
+		dwAutoDetectFlags:      fWINHTTP_AUTO_DETECT_TYPE_DHCP & fWINHTTP_AUTO_DETECT_TYPE_DNS_A,
+		lpszAutoConfigUrl:      nil,
 		lpvReserved:            nil,
 		dwReserved:             0,
 		fAutoLogonIfChallenged: true, // may not be optimal https://msdn.microsoft.com/en-us/library/windows/desktop/aa383153(v=vs.85).aspx
