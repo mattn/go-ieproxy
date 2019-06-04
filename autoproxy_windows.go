@@ -1,9 +1,9 @@
 package ieproxy
 
 import (
-	"strings"
 	"net/http"
 	"net/url"
+	"strings"
 	"syscall"
 	"unsafe"
 )
