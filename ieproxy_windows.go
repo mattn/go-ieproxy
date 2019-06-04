@@ -34,13 +34,8 @@ func writeConf() {
 func overrideEnvWithStaticProxy(conf ProxyConf, setenv envSetter) {
 	if conf.Static.Active {
 		for _, scheme := range []string{"http", "https"} {
-			url, ok := conf.Static.Protocols[scheme]
-			if !ok {
-				url, ok = conf.Static.Protocols[""] // fallback conf
-			}
-			if ok {
-				setenv(scheme+"_proxy", url)
-			}
+			url := mapFallback(scheme, "", conf.Static.Protocols)
+			setenv(scheme+"_proxy", url)
 		}
 		if conf.Static.NoProxy != "" {
 			setenv("no_proxy", conf.Static.NoProxy)
