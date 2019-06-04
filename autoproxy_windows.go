@@ -57,7 +57,7 @@ func getAutoProxyForURL(URL string) (string, error) {
 
 	options := tWINHTTP_AUTOPROXY_OPTIONS{
 		dwFlags:                fWINHTTP_AUTOPROXY_AUTO_DETECT, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
-		dwAutoDetectFlags:      fWINHTTP_AUTO_DETECT_TYPE_DHCP & fWINHTTP_AUTO_DETECT_TYPE_DNS_A,
+		dwAutoDetectFlags:      fWINHTTP_AUTO_DETECT_TYPE_DHCP | fWINHTTP_AUTO_DETECT_TYPE_DNS_A,
 		lpszAutoConfigUrl:      nil,
 		lpvReserved:            nil,
 		dwReserved:             0,

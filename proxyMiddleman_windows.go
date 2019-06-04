@@ -28,7 +28,7 @@ func proxyMiddleman() func(req *http.Request) (i *url.URL, e error) {
 		}
 	} else if conf.Automatic.Active {
 		return func(req *http.Request) (i *url.URL, e error) {
-			return &url.URL{Host: conf.Script.FindProxyForURL(req.URL.String())}, nil
+			return &url.URL{Host: conf.Automatic.FindProxyForURL(req.URL.String())}, nil
 		}
 	} else {
 		//Final fallthrough case; use the environment variables.
