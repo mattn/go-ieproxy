@@ -33,3 +33,10 @@ type tWINHTTP_PROXY_INFO struct {
 	lpszProxy       *uint16
 	lpszProxyBypass *uint16
 }
+
+type tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG struct {
+	fAutoDetect       bool
+	lpszAutoConfigUrl *uint16
+	lpszProxy         *uint16
+	lpszProxyBypass   *uint16
+}

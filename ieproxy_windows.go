@@ -1,10 +1,11 @@
 package ieproxy
 
 import (
+	"golang.org/x/sys/windows/registry"
 	"strings"
 	"sync"
-
-	"golang.org/x/sys/windows/registry"
+	"syscall"
+	"unsafe"
 )
 
 type regeditValues struct {
@@ -24,9 +25,69 @@ func getConf() ProxyConf {
 }
 
 func writeConf() {
-	regedit, _ := readRegedit()
-	windowsProxyConf = parseRegedit(regedit)
-	windowsProxyConf.Automatic.Active = usingWPAD()
+	if cfg, err := getConfFromCall(); err == nil {
+		windowsProxyConf = ProxyConf{
+			Static: StaticProxyConf{
+				Active: cfg.lpszProxy != nil,
+			},
+			Script: ProxyScriptConf{
+				Active: cfg.lpszAutoConfigUrl != nil,
+			},
+			Automatic: AutomaticProxyConf{
+				Active: cfg.fAutoDetect,
+			},
+		}
+
+		if windowsProxyConf.Static.Active {
+			protocol := make(map[string]string)
+			for _, s := range strings.Split(StringFromUTF16Ptr(cfg.lpszProxy), ";") {
+				if s == "" {
+					continue
+				}
+				pair := strings.SplitN(s, "=", 2)
+				if len(pair) > 1 {
+					protocol[pair[0]] = pair[1]
+				} else {
+					protocol[""] = pair[0]
+				}
+			}
+
+			windowsProxyConf.Static.Protocols = protocol
+			if cfg.lpszProxyBypass != nil {
+				windowsProxyConf.Static.NoProxy = strings.Replace(StringFromUTF16Ptr(cfg.lpszProxyBypass), ";", ",", -1)
+			}
+		}
+
+		if windowsProxyConf.Script.Active {
+			windowsProxyConf.Script.URL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
+		}
+	} else {
+		regedit, _ := readRegedit() //If the syscall fails, backup to manual detection.
+		windowsProxyConf = parseRegedit(regedit)
+		windowsProxyConf.Automatic.Active = usingWPAD()
+	}
+}
+
+func getConfFromCall() (*tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG, error) {
+	winHttp := syscall.NewLazyDLL("Winhttp.dll")
+	open := winHttp.NewProc("WinHttpOpen")
+	handle, _, err := open.Call(0, 0, 0, 0, 0)
+	if handle == 0 {
+		return &tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG{}, err
+	}
+	close := winHttp.NewProc("WinHttpCloseHandle")
+	defer close.Call(handle)
+
+	getIEProxyConfigForCurrentUser := winHttp.NewProc("WinHttpGetIEProxyConfigForCurrentUser")
+
+	config := new(tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG)
+
+	ret, _, err := getIEProxyConfigForCurrentUser.Call(uintptr(unsafe.Pointer(config)))
+	if ret > 0 {
+		err = nil
+	}
+
+	return config, err
 }
 
 // OverrideEnvWithStaticProxy writes new values to the
