@@ -63,7 +63,7 @@ func parseRegedit(regedit regeditValues) ProxyConf {
 			Protocols: protocol,
 			NoProxy:   strings.Replace(regedit.ProxyOverride, ";", ",", -1), // to match linux style
 		},
-		Automatic: AutomaticProxyConf{
+		Script: ProxyScriptConf{
 			Active: regedit.AutoConfigURL != "",
 			URL:    regedit.AutoConfigURL,
 		},

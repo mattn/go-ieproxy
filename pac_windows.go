@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-func (apc *AutomaticProxyConf) findProxyForURL(URL string) string {
+func (apc *ProxyScriptConf) findProxyForURL(URL string) string {
 	if !apc.Active {
 		return ""
 	}

@@ -97,7 +97,7 @@ func TestParseRegedit(t *testing.T) {
 				Static: StaticProxyConf{
 					Protocols: emptyMap,
 				},
-				Automatic: AutomaticProxyConf{
+				Script: ProxyScriptConf{
 					Active: true,
 					URL:    "localhost/proxy.pac",
 				},
@@ -191,7 +191,7 @@ func TestPacfile(t *testing.T) {
 	}
 
 	// test inactive proxy
-	proxy := AutomaticProxyConf{
+	proxy := ProxyScriptConf{
 		Active: false,
 		URL:    serverBase + "simple.pac",
 	}

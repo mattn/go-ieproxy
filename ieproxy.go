@@ -7,8 +7,8 @@ import "os"
 
 // ProxyConf gathers the configuration for proxy
 type ProxyConf struct {
-	Static    StaticProxyConf    // static configuration
-	Automatic AutomaticProxyConf // automatic configuration
+	Static StaticProxyConf // static configuration
+	Script ProxyScriptConf // script configuration
 }
 
 // StaticProxyConf contains the configuration for static proxy
@@ -22,8 +22,8 @@ type StaticProxyConf struct {
 	NoProxy string
 }
 
-// AutomaticProxyConf contains the configuration for automatic proxy
-type AutomaticProxyConf struct {
+// ProxyScriptConf contains the configuration for automatic proxy
+type ProxyScriptConf struct {
 	// Is the proxy active?
 	Active bool
 	// URL of the .pac file
@@ -43,7 +43,7 @@ func OverrideEnvWithStaticProxy() {
 }
 
 // FindProxyForURL computes the proxy for a given URL according to the pac file
-func (apc *AutomaticProxyConf) FindProxyForURL(URL string) string {
+func (apc *ProxyScriptConf) FindProxyForURL(URL string) string {
 	return apc.findProxyForURL(URL)
 }
 
