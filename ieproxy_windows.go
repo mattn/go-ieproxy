@@ -31,10 +31,8 @@ func writeConf() {
 				Active: cfg.lpszProxy != nil,
 			},
 			Script: ProxyScriptConf{
-				Active: cfg.lpszAutoConfigUrl != nil,
-			},
-			Automatic: AutomaticProxyConf{
-				Active: cfg.fAutoDetect,
+				Active:       cfg.lpszAutoConfigUrl != nil || cfg.fAutoDetect,
+				AutoDiscover: cfg.fAutoDetect,
 			},
 		}
 
@@ -64,7 +62,6 @@ func writeConf() {
 	} else {
 		regedit, _ := readRegedit() //If the syscall fails, backup to manual detection.
 		windowsProxyConf = parseRegedit(regedit)
-		windowsProxyConf.Automatic.Active = usingWPAD()
 	}
 }
 

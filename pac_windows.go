@@ -10,7 +10,7 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	if !psc.Active {
 		return ""
 	}
-	proxy, _ := getProxyForURL(psc.URL, URL)
+	proxy, _ := getProxyForURL(psc.URL, URL, psc.AutoDiscover)
 	i := strings.Index(proxy, ";")
 	if i >= 0 {
 		return proxy[:i]
@@ -18,7 +18,7 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	return proxy
 }
 
-func getProxyForURL(pacfileURL, URL string) (string, error) {
+func getProxyForURL(pacfileURL, URL string, autoDetect bool) (string, error) {
 	pacfileURLPtr, err := syscall.UTF16PtrFromString(pacfileURL)
 	if err != nil {
 		return "", err
@@ -39,10 +39,20 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 
 	getProxyForUrl := winHttp.NewProc("WinHttpGetProxyForUrl")
 
+	dwFlags := fWINHTTP_AUTOPROXY_CONFIG_URL
+	dwAutoDetectFlags := autoDetectFlag(0)
+	pfURLptr := pacfileURLPtr
+
+	if autoDetect {
+		dwFlags = fWINHTTP_AUTOPROXY_AUTO_DETECT
+		dwAutoDetectFlags = fWINHTTP_AUTO_DETECT_TYPE_DNS_A | fWINHTTP_AUTO_DETECT_TYPE_DHCP
+		pfURLptr = nil
+	}
+
 	options := tWINHTTP_AUTOPROXY_OPTIONS{
-		dwFlags:                fWINHTTP_AUTOPROXY_CONFIG_URL, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
-		dwAutoDetectFlags:      0,
-		lpszAutoConfigUrl:      pacfileURLPtr,
+		dwFlags:                dwFlags, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
+		dwAutoDetectFlags:      dwAutoDetectFlags,
+		lpszAutoConfigUrl:      pfURLptr,
 		lpvReserved:            nil,
 		dwReserved:             0,
 		fAutoLogonIfChallenged: true, // may not be optimal https://msdn.microsoft.com/en-us/library/windows/desktop/aa383153(v=vs.85).aspx

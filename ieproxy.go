@@ -7,9 +7,8 @@ import "os"
 
 // ProxyConf gathers the configuration for proxy
 type ProxyConf struct {
-	Static    StaticProxyConf    // static configuration
-	Script    ProxyScriptConf    // script configuration
-	Automatic AutomaticProxyConf // automatic configuration
+	Static StaticProxyConf // static configuration
+	Script ProxyScriptConf // script configuration
 }
 
 // StaticProxyConf contains the configuration for static proxy
@@ -27,18 +26,10 @@ type StaticProxyConf struct {
 type ProxyScriptConf struct {
 	// Is the proxy active?
 	Active bool
+	// Is the proxy set to auto-discover?
+	AutoDiscover bool
 	// URL of the .pac file
 	URL string
-}
-
-type AutomaticProxyConf struct {
-	// Is the proxy active?
-	Active bool
-
-	/*
-		Note we have no proper way to detect if this *is* used.
-		The best thing to do is just to make a syscall and see what it returns.
-	*/
 }
 
 // GetConf retrieves the proxy configuration from the Windows Regedit
@@ -56,10 +47,6 @@ func OverrideEnvWithStaticProxy() {
 // FindProxyForURL computes the proxy for a given URL according to the pac file
 func (psc *ProxyScriptConf) FindProxyForURL(URL string) string {
 	return psc.findProxyForURL(URL)
-}
-
-func (apc *AutomaticProxyConf) FindProxyForURL(URL string) string {
-	return apc.findProxyForURL(URL)
 }
 
 type envSetter func(string, string) error
