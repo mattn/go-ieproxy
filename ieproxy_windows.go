@@ -24,46 +24,52 @@ func getConf() ProxyConf {
 }
 
 func writeConf() {
-	if cfg, err := getConfFromCall(); err == nil {
-		windowsProxyConf = ProxyConf{
-			Static: StaticProxyConf{
-				Active: cfg.lpszProxy != nil,
-			},
-			Script: ProxyScriptConf{
-				Active: cfg.lpszAutoConfigUrl != nil || cfg.fAutoDetect,
-			},
-		}
+	var (
+		cfg *tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG
+		err error
+	)
 
-		if windowsProxyConf.Static.Active {
-			protocol := make(map[string]string)
-			for _, s := range strings.Split(StringFromUTF16Ptr(cfg.lpszProxy), ";") {
-				if s == "" {
-					continue
-				}
-				pair := strings.SplitN(s, "=", 2)
-				if len(pair) > 1 {
-					protocol[pair[0]] = pair[1]
-				} else {
-					protocol[""] = pair[0]
-				}
-			}
-
-			windowsProxyConf.Static.Protocols = protocol
-			if cfg.lpszProxyBypass != nil {
-				windowsProxyConf.Static.NoProxy = strings.Replace(StringFromUTF16Ptr(cfg.lpszProxyBypass), ";", ",", -1)
-			}
-		}
-
-		if windowsProxyConf.Script.Active {
-			windowsProxyConf.Script.PreConfiguredURL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
-		}
-	} else {
+	if cfg, err = getUserConfigFromWindowsSyscall(); err != nil {
 		regedit, _ := readRegedit() //If the syscall fails, backup to manual detection.
 		windowsProxyConf = parseRegedit(regedit)
+		return
+	}
+
+	windowsProxyConf = ProxyConf{
+		Static: StaticProxyConf{
+			Active: cfg.lpszProxy != nil,
+		},
+		Script: ProxyScriptConf{
+			Active: cfg.lpszAutoConfigUrl != nil || cfg.fAutoDetect,
+		},
+	}
+
+	if windowsProxyConf.Static.Active {
+		protocol := make(map[string]string)
+		for _, s := range strings.Split(StringFromUTF16Ptr(cfg.lpszProxy), ";") {
+			if s == "" {
+				continue
+			}
+			pair := strings.SplitN(s, "=", 2)
+			if len(pair) > 1 {
+				protocol[pair[0]] = pair[1]
+			} else {
+				protocol[""] = pair[0]
+			}
+		}
+
+		windowsProxyConf.Static.Protocols = protocol
+		if cfg.lpszProxyBypass != nil {
+			windowsProxyConf.Static.NoProxy = strings.Replace(StringFromUTF16Ptr(cfg.lpszProxyBypass), ";", ",", -1)
+		}
+	}
+
+	if windowsProxyConf.Script.Active {
+		windowsProxyConf.Script.PreConfiguredURL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
 	}
 }
 
-func getConfFromCall() (*tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG, error) {
+func getUserConfigFromWindowsSyscall() (*tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG, error) {
 	handle, _, err := winHttpOpen.Call(0, 0, 0, 0, 0)
 	if handle == 0 {
 		return &tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG{}, err
