@@ -1,9 +1,10 @@
 package ieproxy
 
 import (
-	"golang.org/x/net/http/httpproxy"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/http/httpproxy"
 )
 
 func proxyMiddleman() func(req *http.Request) (i *url.URL, e error) {

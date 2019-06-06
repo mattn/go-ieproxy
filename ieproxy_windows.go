@@ -1,10 +1,11 @@
 package ieproxy
 
 import (
-	"golang.org/x/sys/windows/registry"
 	"strings"
 	"sync"
 	"unsafe"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 type regeditValues struct {
