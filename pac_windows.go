@@ -10,7 +10,7 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	if !psc.Active {
 		return ""
 	}
-	proxy, _ := getProxyForURL(psc.PreConfiguredURL, URL, psc.PreConfiguredURL == "")
+	proxy, _ := getProxyForURL(psc.PreConfiguredURL, URL)
 	i := strings.Index(proxy, ";")
 	if i >= 0 {
 		return proxy[:i]
@@ -18,7 +18,7 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	return proxy
 }
 
-func getProxyForURL(pacfileURL, URL string, autoDetect bool) (string, error) {
+func getProxyForURL(pacfileURL, URL string) (string, error) {
 	pacfileURLPtr, err := syscall.UTF16PtrFromString(pacfileURL)
 	if err != nil {
 		return "", err
@@ -38,7 +38,7 @@ func getProxyForURL(pacfileURL, URL string, autoDetect bool) (string, error) {
 	dwAutoDetectFlags := autoDetectFlag(0)
 	pfURLptr := pacfileURLPtr
 
-	if autoDetect {
+	if pacfileURL == "" {
 		dwFlags = fWINHTTP_AUTOPROXY_AUTO_DETECT
 		dwAutoDetectFlags = fWINHTTP_AUTO_DETECT_TYPE_DNS_A | fWINHTTP_AUTO_DETECT_TYPE_DHCP
 		pfURLptr = nil
