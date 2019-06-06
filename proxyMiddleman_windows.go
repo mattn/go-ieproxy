@@ -9,8 +9,12 @@ import (
 func proxyMiddleman() func(req *http.Request) (i *url.URL, e error) {
 	// Get the proxy configuration
 	conf := GetConf()
+	envcfg := httpproxy.FromEnvironment()
 
-	if conf.Script.Active {
+	if envcfg.HTTPProxy != "" || envcfg.HTTPSProxy != "" {
+		// If the user manually specifies environment variables, prefer those over the Windows config.
+		return http.ProxyFromEnvironment
+	} else if conf.Script.Active {
 		// If automatic proxy obtaining is specified
 		return func(req *http.Request) (i *url.URL, e error) {
 			out := &url.URL{Host: conf.Script.FindProxyForURL(req.URL.String())}
