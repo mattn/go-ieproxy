@@ -77,25 +77,6 @@ func getConfFromCall() (*tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG, error) {
 		err = nil
 	}
 
-	if config.fAutoDetect == true {
-		adFlag := uintptr(fWINHTTP_AUTO_DETECT_TYPE_DNS_A | fWINHTTP_AUTO_DETECT_TYPE_DHCP)
-		acURL := new(uint16)
-
-		ret, _, err = winHttpDetectAutoProxyConfigURL.Call(
-			adFlag,
-			uintptr(unsafe.Pointer(acURL)),
-		)
-		if ret > 0 {
-			err = nil
-		}
-
-		//if err.(syscall.Errno) == syscall.Errno(12180) {
-		if err != nil {
-			config.fAutoDetect = false
-			err = nil
-		}
-	}
-
 	return config, err
 }
 

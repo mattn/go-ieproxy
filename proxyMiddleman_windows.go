@@ -13,7 +13,11 @@ func proxyMiddleman() func(req *http.Request) (i *url.URL, e error) {
 	if conf.Script.Active {
 		//If automatic proxy obtaining is specified
 		return func(req *http.Request) (i *url.URL, e error) {
-			return &url.URL{Host: conf.Script.FindProxyForURL(req.URL.String())}, nil
+			out := &url.URL{Host: conf.Script.FindProxyForURL(req.URL.String())}
+			if out.Host == "" {
+				return nil, nil
+			}
+			return out, nil
 		}
 	} else if conf.Static.Active {
 		//If static proxy obtaining is specified
