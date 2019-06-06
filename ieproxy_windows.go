@@ -4,7 +4,6 @@ import (
 	"golang.org/x/sys/windows/registry"
 	"strings"
 	"sync"
-	"syscall"
 	"unsafe"
 )
 
@@ -65,30 +64,24 @@ func writeConf() {
 }
 
 func getConfFromCall() (*tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG, error) {
-	winHttp := syscall.NewLazyDLL("Winhttp.dll")
-	open := winHttp.NewProc("WinHttpOpen")
-	handle, _, err := open.Call(0, 0, 0, 0, 0)
+	handle, _, err := winHttpOpen.Call(0, 0, 0, 0, 0)
 	if handle == 0 {
 		return &tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG{}, err
 	}
-	close := winHttp.NewProc("WinHttpCloseHandle")
-	defer close.Call(handle)
-
-	getIEProxyConfigForCurrentUser := winHttp.NewProc("WinHttpGetIEProxyConfigForCurrentUser")
+	defer winHttpCloseHandle.Call(handle)
 
 	config := new(tWINHTTP_CURRENT_USER_IE_PROXY_CONFIG)
 
-	ret, _, err := getIEProxyConfigForCurrentUser.Call(uintptr(unsafe.Pointer(config)))
+	ret, _, err := winHttpGetIEProxyConfigForCurrentUser.Call(uintptr(unsafe.Pointer(config)))
 	if ret > 0 {
 		err = nil
 	}
 
 	if config.fAutoDetect == true {
-		detectAutoProxyConfigURL := winHttp.NewProc("WinHttpDetectAutoProxyConfigUrl")
 		adFlag := uintptr(fWINHTTP_AUTO_DETECT_TYPE_DNS_A | fWINHTTP_AUTO_DETECT_TYPE_DHCP)
 		acURL := new(uint16)
 
-		ret, _, err = detectAutoProxyConfigURL.Call(
+		ret, _, err = winHttpDetectAutoProxyConfigURL.Call(
 			adFlag,
 			uintptr(unsafe.Pointer(acURL)),
 		)

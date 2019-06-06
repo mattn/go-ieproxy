@@ -28,16 +28,11 @@ func getProxyForURL(pacfileURL, URL string, autoDetect bool) (string, error) {
 		return "", err
 	}
 
-	winHttp := syscall.NewLazyDLL("Winhttp.dll")
-	open := winHttp.NewProc("WinHttpOpen")
-	handle, _, err := open.Call(0, 0, 0, 0, 0)
+	handle, _, err := winHttpOpen.Call(0, 0, 0, 0, 0)
 	if handle == 0 {
 		return "", err
 	}
-	close := winHttp.NewProc("WinHttpCloseHandle")
-	defer close.Call(handle)
-
-	getProxyForUrl := winHttp.NewProc("WinHttpGetProxyForUrl")
+	defer winHttpCloseHandle.Call(handle)
 
 	dwFlags := fWINHTTP_AUTOPROXY_CONFIG_URL
 	dwAutoDetectFlags := autoDetectFlag(0)
@@ -60,7 +55,7 @@ func getProxyForURL(pacfileURL, URL string, autoDetect bool) (string, error) {
 
 	info := new(tWINHTTP_PROXY_INFO)
 
-	ret, _, err := getProxyForUrl.Call(
+	ret, _, err := winHttpGetProxyForURL.Call(
 		handle,
 		uintptr(unsafe.Pointer(URLPtr)),
 		uintptr(unsafe.Pointer(&options)),

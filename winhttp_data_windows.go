@@ -1,5 +1,14 @@
 package ieproxy
 
+import "golang.org/x/sys/windows"
+
+var winHttp = windows.NewLazySystemDLL("winhttp.dll")
+var winHttpGetProxyForURL = winHttp.NewProc("WinHttpGetProxyForUrl")
+var winHttpOpen = winHttp.NewProc("WinHttpOpen")
+var winHttpCloseHandle = winHttp.NewProc("WinHttpCloseHandle")
+var winHttpGetIEProxyConfigForCurrentUser = winHttp.NewProc("WinHttpGetIEProxyConfigForCurrentUser")
+var winHttpDetectAutoProxyConfigURL = winHttp.NewProc("WinHttpDetectAutoProxyConfigUrl")
+
 type tWINHTTP_AUTOPROXY_OPTIONS struct {
 	dwFlags                autoProxyFlag
 	dwAutoDetectFlags      autoDetectFlag
