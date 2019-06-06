@@ -26,7 +26,8 @@ type StaticProxyConf struct {
 type ProxyScriptConf struct {
 	// Is the proxy active?
 	Active bool
-	// PreConfiguredURL of the .pac file
+	// PreConfiguredURL of the .pac file.
+	// If this is empty and Active is true, auto-configuration should be assumed.
 	PreConfiguredURL string
 }
 
