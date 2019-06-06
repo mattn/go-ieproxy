@@ -31,8 +31,7 @@ func writeConf() {
 				Active: cfg.lpszProxy != nil,
 			},
 			Script: ProxyScriptConf{
-				Active:       cfg.lpszAutoConfigUrl != nil || cfg.fAutoDetect,
-				AutoDiscover: cfg.fAutoDetect,
+				Active: cfg.lpszAutoConfigUrl != nil || cfg.fAutoDetect,
 			},
 		}
 
@@ -57,7 +56,7 @@ func writeConf() {
 		}
 
 		if windowsProxyConf.Script.Active {
-			windowsProxyConf.Script.URL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
+			windowsProxyConf.Script.PreConfiguredURL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
 		}
 	} else {
 		regedit, _ := readRegedit() //If the syscall fails, backup to manual detection.
@@ -143,8 +142,8 @@ func parseRegedit(regedit regeditValues) ProxyConf {
 			NoProxy:   strings.Replace(regedit.ProxyOverride, ";", ",", -1), // to match linux style
 		},
 		Script: ProxyScriptConf{
-			Active: regedit.AutoConfigURL != "",
-			URL:    regedit.AutoConfigURL,
+			Active:           regedit.AutoConfigURL != "",
+			PreConfiguredURL: regedit.AutoConfigURL,
 		},
 	}
 }

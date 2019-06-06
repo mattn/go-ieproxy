@@ -10,7 +10,7 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 	if !psc.Active {
 		return ""
 	}
-	proxy, _ := getProxyForURL(psc.URL, URL, psc.AutoDiscover)
+	proxy, _ := getProxyForURL(psc.PreConfiguredURL, URL, psc.PreConfiguredURL == "")
 	i := strings.Index(proxy, ";")
 	if i >= 0 {
 		return proxy[:i]

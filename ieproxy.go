@@ -26,10 +26,8 @@ type StaticProxyConf struct {
 type ProxyScriptConf struct {
 	// Is the proxy active?
 	Active bool
-	// Is the proxy set to auto-discover?
-	AutoDiscover bool
-	// URL of the .pac file
-	URL string
+	// PreConfiguredURL of the .pac file
+	PreConfiguredURL string
 }
 
 // GetConf retrieves the proxy configuration from the Windows Regedit
