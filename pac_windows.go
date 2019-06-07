@@ -66,8 +66,7 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 		err = nil
 	}
 
-	defer globalFree.Call(uintptr(unsafe.Pointer(info.lpszProxy)))
-	defer globalFree.Call(uintptr(unsafe.Pointer(info.lpszProxyBypass)))
-	defer globalFree.Call(uintptr(unsafe.Pointer(options.lpszAutoConfigUrl)))
+	defer globalFreeWrapper(info.lpszProxyBypass)
+	defer globalFreeWrapper(info.lpszProxy)
 	return StringFromUTF16Ptr(info.lpszProxy), err
 }

@@ -36,9 +36,9 @@ func writeConf() {
 		return
 	}
 
-	defer globalFree.Call(uintptr(unsafe.Pointer(cfg.lpszAutoConfigUrl)))
-	defer globalFree.Call(uintptr(unsafe.Pointer(cfg.lpszProxyBypass)))
-	defer globalFree.Call(uintptr(unsafe.Pointer(cfg.lpszProxy)))
+	defer globalFreeWrapper(cfg.lpszProxy)
+	defer globalFreeWrapper(cfg.lpszProxyBypass)
+	defer globalFreeWrapper(cfg.lpszAutoConfigUrl)
 
 	windowsProxyConf = ProxyConf{
 		Static: StaticProxyConf{
