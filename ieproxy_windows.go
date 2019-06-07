@@ -44,7 +44,7 @@ func writeConf() {
 		Static: StaticProxyConf{
 			Active: cfg.lpszProxy != nil,
 		},
-		Script: ProxyScriptConf{
+		Automatic: ProxyScriptConf{
 			Active: cfg.lpszAutoConfigUrl != nil || cfg.fAutoDetect,
 		},
 	}
@@ -70,8 +70,8 @@ func writeConf() {
 		}
 	}
 
-	if windowsProxyConf.Script.Active {
-		windowsProxyConf.Script.PreConfiguredURL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
+	if windowsProxyConf.Automatic.Active {
+		windowsProxyConf.Automatic.PreConfiguredURL = StringFromUTF16Ptr(cfg.lpszAutoConfigUrl)
 	}
 }
 
@@ -127,7 +127,7 @@ func parseRegedit(regedit regeditValues) ProxyConf {
 			Protocols: protocol,
 			NoProxy:   strings.Replace(regedit.ProxyOverride, ";", ",", -1), // to match linux style
 		},
-		Script: ProxyScriptConf{
+		Automatic: ProxyScriptConf{
 			Active:           regedit.AutoConfigURL != "",
 			PreConfiguredURL: regedit.AutoConfigURL,
 		},

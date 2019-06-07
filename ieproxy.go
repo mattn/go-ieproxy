@@ -7,8 +7,8 @@ import "os"
 
 // ProxyConf gathers the configuration for proxy
 type ProxyConf struct {
-	Static StaticProxyConf // static configuration
-	Script ProxyScriptConf // script configuration
+	Static    StaticProxyConf // static configuration
+	Automatic ProxyScriptConf // script configuration
 }
 
 // StaticProxyConf contains the configuration for static proxy

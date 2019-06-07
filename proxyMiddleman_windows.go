@@ -15,10 +15,10 @@ func proxyMiddleman() func(req *http.Request) (i *url.URL, e error) {
 	if envcfg.HTTPProxy != "" || envcfg.HTTPSProxy != "" {
 		// If the user manually specifies environment variables, prefer those over the Windows config.
 		return http.ProxyFromEnvironment
-	} else if conf.Script.Active {
+	} else if conf.Automatic.Active {
 		// If automatic proxy obtaining is specified
 		return func(req *http.Request) (i *url.URL, e error) {
-			host := conf.Script.FindProxyForURL(req.URL.String())
+			host := conf.Automatic.FindProxyForURL(req.URL.String())
 			if host == "" {
 				return nil, nil
 			}
