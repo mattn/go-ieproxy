@@ -31,7 +31,7 @@ func writeConf() {
 	)
 
 	if cfg, err = getUserConfigFromWindowsSyscall(); err != nil {
-		regedit, _ := readRegedit() //If the syscall fails, backup to manual detection.
+		regedit, _ := readRegedit() // If the syscall fails, backup to manual detection.
 		windowsProxyConf = parseRegedit(regedit)
 		return
 	}
@@ -52,6 +52,7 @@ func writeConf() {
 	if windowsProxyConf.Static.Active {
 		protocol := make(map[string]string)
 		for _, s := range strings.Split(StringFromUTF16Ptr(cfg.lpszProxy), ";") {
+			s = strings.TrimSpace(s)
 			if s == "" {
 				continue
 			}

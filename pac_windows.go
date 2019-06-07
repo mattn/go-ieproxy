@@ -51,8 +51,8 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 		lpvReserved:            nil,
 		dwReserved:             0,
 		fAutoLogonIfChallenged: true, // may not be optimal https://msdn.microsoft.com/en-us/library/windows/desktop/aa383153(v=vs.85).aspx
-	} //lpszProxyBypass isn't used as this only executes in cases where there (may) be a pac file (autodetect can fail), where lpszProxyBypass couldn't be returned.
-	//in the case that autodetect fails and no pre-specified pacfile is present, no proxy is returned.
+	} // lpszProxyBypass isn't used as this only executes in cases where there (may) be a pac file (autodetect can fail), where lpszProxyBypass couldn't be returned.
+	// in the case that autodetect fails and no pre-specified pacfile is present, no proxy is returned.
 
 	info := new(tWINHTTP_PROXY_INFO)
 

@@ -18,11 +18,11 @@ func proxyMiddleman() func(req *http.Request) (i *url.URL, e error) {
 	} else if conf.Script.Active {
 		// If automatic proxy obtaining is specified
 		return func(req *http.Request) (i *url.URL, e error) {
-			out := &url.URL{Host: conf.Script.FindProxyForURL(req.URL.String())}
-			if out.Host == "" {
+			host := conf.Script.FindProxyForURL(req.URL.String())
+			if host == "" {
 				return nil, nil
 			}
-			return out, nil
+			return &url.URL{Host: host}, nil
 		}
 	} else if conf.Static.Active {
 		// If static proxy obtaining is specified
