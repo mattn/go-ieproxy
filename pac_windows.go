@@ -6,38 +6,11 @@ import (
 	"unsafe"
 )
 
-type tWINHTTP_AUTOPROXY_OPTIONS struct {
-	dwFlags                autoProxyFlag
-	dwAutoDetectFlags      uint32
-	lpszAutoConfigUrl      *uint16
-	lpvReserved            *uint16
-	dwReserved             uint32
-	fAutoLogonIfChallenged bool
-}
-type autoProxyFlag uint32
-
-const (
-	fWINHTTP_AUTOPROXY_AUTO_DETECT         = autoProxyFlag(0x00000001)
-	fWINHTTP_AUTOPROXY_CONFIG_URL          = autoProxyFlag(0x00000002)
-	fWINHTTP_AUTOPROXY_NO_CACHE_CLIENT     = autoProxyFlag(0x00080000)
-	fWINHTTP_AUTOPROXY_NO_CACHE_SVC        = autoProxyFlag(0x00100000)
-	fWINHTTP_AUTOPROXY_NO_DIRECTACCESS     = autoProxyFlag(0x00040000)
-	fWINHTTP_AUTOPROXY_RUN_INPROCESS       = autoProxyFlag(0x00010000)
-	fWINHTTP_AUTOPROXY_RUN_OUTPROCESS_ONLY = autoProxyFlag(0x00020000)
-	fWINHTTP_AUTOPROXY_SORT_RESULTS        = autoProxyFlag(0x00400000)
-)
-
-type tWINHTTP_PROXY_INFO struct {
-	dwAccessType    uint32
-	lpszProxy       *uint16
-	lpszProxyBypass *uint16
-}
-
-func (apc *AutomaticProxyConf) findProxyForURL(URL string) string {
-	if !apc.Active {
+func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
+	if !psc.Active {
 		return ""
 	}
-	proxy, _ := getProxyForURL(apc.URL, URL)
+	proxy, _ := getProxyForURL(psc.PreConfiguredURL, URL)
 	i := strings.Index(proxy, ";")
 	if i >= 0 {
 		return proxy[:i]
@@ -55,29 +28,35 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 		return "", err
 	}
 
-	winHttp := syscall.NewLazyDLL("Winhttp.dll")
-	open := winHttp.NewProc("WinHttpOpen")
-	handle, _, err := open.Call(0, 0, 0, 0, 0)
+	handle, _, err := winHttpOpen.Call(0, 0, 0, 0, 0)
 	if handle == 0 {
 		return "", err
 	}
-	close := winHttp.NewProc("WinHttpCloseHandle")
-	defer close.Call(handle)
+	defer winHttpCloseHandle.Call(handle)
 
-	getProxyForUrl := winHttp.NewProc("WinHttpGetProxyForUrl")
+	dwFlags := fWINHTTP_AUTOPROXY_CONFIG_URL
+	dwAutoDetectFlags := autoDetectFlag(0)
+	pfURLptr := pacfileURLPtr
+
+	if pacfileURL == "" {
+		dwFlags = fWINHTTP_AUTOPROXY_AUTO_DETECT
+		dwAutoDetectFlags = fWINHTTP_AUTO_DETECT_TYPE_DNS_A | fWINHTTP_AUTO_DETECT_TYPE_DHCP
+		pfURLptr = nil
+	}
 
 	options := tWINHTTP_AUTOPROXY_OPTIONS{
-		dwFlags:                fWINHTTP_AUTOPROXY_CONFIG_URL, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
-		dwAutoDetectFlags:      0,
-		lpszAutoConfigUrl:      pacfileURLPtr,
+		dwFlags:                dwFlags, // adding cache might cause issues: https://github.com/mattn/go-ieproxy/issues/6
+		dwAutoDetectFlags:      dwAutoDetectFlags,
+		lpszAutoConfigUrl:      pfURLptr,
 		lpvReserved:            nil,
 		dwReserved:             0,
 		fAutoLogonIfChallenged: true, // may not be optimal https://msdn.microsoft.com/en-us/library/windows/desktop/aa383153(v=vs.85).aspx
-	}
+	} // lpszProxyBypass isn't used as this only executes in cases where there (may) be a pac file (autodetect can fail), where lpszProxyBypass couldn't be returned.
+	// in the case that autodetect fails and no pre-specified pacfile is present, no proxy is returned.
 
 	info := new(tWINHTTP_PROXY_INFO)
 
-	ret, _, err := getProxyForUrl.Call(
+	ret, _, err := winHttpGetProxyForURL.Call(
 		handle,
 		uintptr(unsafe.Pointer(URLPtr)),
 		uintptr(unsafe.Pointer(&options)),
@@ -87,5 +66,7 @@ func getProxyForURL(pacfileURL, URL string) (string, error) {
 		err = nil
 	}
 
+	defer globalFreeWrapper(info.lpszProxyBypass)
+	defer globalFreeWrapper(info.lpszProxy)
 	return StringFromUTF16Ptr(info.lpszProxy), err
 }

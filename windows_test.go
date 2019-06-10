@@ -97,9 +97,9 @@ func TestParseRegedit(t *testing.T) {
 				Static: StaticProxyConf{
 					Protocols: emptyMap,
 				},
-				Automatic: AutomaticProxyConf{
-					Active: true,
-					URL:    "localhost/proxy.pac",
+				Automatic: ProxyScriptConf{
+					Active:           true,
+					PreConfiguredURL: "localhost/proxy.pac",
 				},
 			},
 		},
@@ -191,9 +191,9 @@ func TestPacfile(t *testing.T) {
 	}
 
 	// test inactive proxy
-	proxy := AutomaticProxyConf{
-		Active: false,
-		URL:    serverBase + "simple.pac",
+	proxy := ProxyScriptConf{
+		Active:           false,
+		PreConfiguredURL: serverBase + "simple.pac",
 	}
 	out := proxy.FindProxyForURL("http://google.com")
 	if out != "" {
@@ -238,7 +238,7 @@ func TestPacfile(t *testing.T) {
 		},
 	}
 	for _, p := range pacSet {
-		proxy.URL = serverBase + p.pacfile
+		proxy.PreConfiguredURL = serverBase + p.pacfile
 		out := proxy.FindProxyForURL(p.url)
 		if out != p.expected {
 			t.Error("Got: ", out, "Expected: ", p.expected)
