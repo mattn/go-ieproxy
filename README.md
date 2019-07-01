@@ -18,7 +18,7 @@ You can either obtain a `net/http` compatible proxy function using `ieproxy.GetP
 
 ## Examples
 
-###Using GetProxyFunc():
+### Using GetProxyFunc():
 
 ```go
 func init() {
@@ -28,7 +28,7 @@ func init() {
 
 GetProxyFunc acts as a middleman between `net/http` and `mattn/go-ieproxy` in order to select the correct proxy configuration based off the details supplied in the config.
 
-###Using OverrideEnvWithStaticProxy():
+### Using OverrideEnvWithStaticProxy():
 
 ```go
 func init() {
@@ -39,7 +39,7 @@ func init() {
 
 OverrideEnvWithStaticProxy overrides the relevant environment variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) with the **static, manually configured** proxy details typically found in the registry.
 
-###Using GetConf():
+### Using GetConf():
 
 ```go
 func main() {
