@@ -116,8 +116,10 @@ func TestParseRegedit(t *testing.T) {
 func TestOverrideEnv(t *testing.T) {
 	var callStack []string
 	pseudoSetEnv := func(key, value string) error {
-		callStack = append(callStack, key)
-		callStack = append(callStack, value)
+		if value != "" {
+			callStack = append(callStack, key)
+			callStack = append(callStack, value)
+		}
 		return nil
 	}
 	overrideSet := []struct {
