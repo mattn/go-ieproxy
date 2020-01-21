@@ -42,19 +42,22 @@ func writeConf() {
 		autoDetect = ieCfg.fAutoDetect
 	}
 
-	// Try WinHTTP default proxy.
-	if defaultCfg, err := getDefaultProxyConfiguration(); err == nil {
-		defer globalFreeWrapper(defaultCfg.lpszProxy)
-		defer globalFreeWrapper(defaultCfg.lpszProxyBypass)
+	if proxy == "" { // <- new. Only fallback if we got NO proxy
+		// Try WinHTTP default proxy.
+		if defaultCfg, err := getDefaultProxyConfiguration(); err == nil {
+			defer globalFreeWrapper(defaultCfg.lpszProxy)
+			defer globalFreeWrapper(defaultCfg.lpszProxyBypass)
 
-		newProxy := StringFromUTF16Ptr(defaultCfg.lpszProxy)
-		if proxy == "" {
-			proxy = newProxy
-		}
+			// Changed, next 2 lines, so if that if we always set both of these (they are a pair, it doesn't make sense to set one here and keep the value of the other from above)
+			newProxy := StringFromUTF16Ptr(defaultCfg.lpszProxy)
+			if proxy == "" {
+				proxy = newProxy
+			}
 
-		newProxyByPass := StringFromUTF16Ptr(defaultCfg.lpszProxyBypass)
-		if proxyByPass == "" {
-			proxyByPass = newProxyByPass
+			newProxyByPass := StringFromUTF16Ptr(defaultCfg.lpszProxyBypass)
+			if proxyByPass == "" {
+				proxyByPass = newProxyByPass
+			}
 		}
 	}
 
@@ -174,7 +177,7 @@ func readRegedit() (values regeditValues, err error) {
 			is not accessible, hence it should try to read from the key LOCAL_MACHINE.
 			https://docs.microsoft.com/en-us/windows/win32/services/localsystem-account
 		*/
-		k, err = registry.OpenKey(registry.LOCAL_MACHINE, `Software\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)		
+		k, err = registry.OpenKey(registry.LOCAL_MACHINE, `Software\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)
 		if err != nil {
 			return
 		}
