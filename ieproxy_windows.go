@@ -170,7 +170,14 @@ func parseRegedit(regedit regeditValues) ProxyConf {
 func readRegedit() (values regeditValues, err error) {
 	k, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)
 	if err != nil {
-		return
+		/*	It might be possible that the component/Exe is running under local system account, for which CURRENT_USER
+			is not accessible, hence it should try to read from the key LOCAL_MACHINE.
+			https://docs.microsoft.com/en-us/windows/win32/services/localsystem-account
+		*/
+		k, err = registry.OpenKey(registry.LOCAL_MACHINE, `Software\Microsoft\Windows\CurrentVersion\Internet Settings`, registry.QUERY_VALUE)		
+		if err != nil {
+			return
+		}
 	}
 	defer k.Close()
 
