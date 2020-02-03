@@ -42,7 +42,7 @@ func writeConf() {
 		autoDetect = ieCfg.fAutoDetect
 	}
 
-	if proxy == "" { // <- new. Only fallback if we got NO proxy
+	if proxy == "" && !autoDetect{
 		// Try WinHTTP default proxy.
 		if defaultCfg, err := getDefaultProxyConfiguration(); err == nil {
 			defer globalFreeWrapper(defaultCfg.lpszProxy)
