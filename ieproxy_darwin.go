@@ -86,6 +86,16 @@ func writeConf() {
 			darwinProxyConf.Static.NoProxy = strings.Join(exceptionList, ",")
 		}
 	}
+
+	cfNumPacEnable := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesProxyAutoConfigEnable)))
+	if unsafe.Pointer(cfNumPacEnable) != C.NULL && cfNumberGetGoInt(cfNumPacEnable) > 0 {
+		cfStringPac := C.CFStringRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesProxyAutoConfigURLString)))
+		if unsafe.Pointer(cfStringPac) != C.NULL {
+			pac := cfStringGetGoString(cfStringPac)
+			darwinProxyConf.Automatic.PreConfiguredURL = pac
+			darwinProxyConf.Automatic.Active = true
+		}
+	}
 }
 
 // OverrideEnvWithStaticProxy writes new values to the
