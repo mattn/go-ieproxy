@@ -110,7 +110,6 @@ func (psc *ProxyScriptConf) findProxyForURL(URL string) string {
 
 func getProxyForURL(pacFileURL, url string) string {
 	if pacFileURL == "" {
-		// auto discover is not supported yet
 		pacFileURL = getPacUrl()
 	}
 	if pacFileURL == "" {
