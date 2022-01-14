@@ -24,6 +24,12 @@ func getConf() ProxyConf {
 	return darwinProxyConf
 }
 
+// reloadConf forces a reload of the proxy configuration.
+func reloadConf() ProxyConf {
+	writeConf()
+	return getConf()
+}
+
 func cfStringGetGoString(cfStr C.CFStringRef) string {
 	retCString := (*C.char)(C.calloc(C.ulong(uint(128)), 1))
 	defer C.free(unsafe.Pointer(retCString))
