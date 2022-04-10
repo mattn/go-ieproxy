@@ -58,7 +58,7 @@ func cfArrayGetGoStrings(cfArray C.CFArrayRef) []string {
 func writeConf() {
 	cfDictProxy := C.CFDictionaryRef(C.CFNetworkCopySystemProxySettings())
 	defer C.CFRelease(C.CFTypeRef(cfDictProxy))
-	darwinProxyConf.Static.Active = false
+	darwinProxyConf = ProxyConf{}
 
 	cfNumHttpEnable := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPEnable)))
 	if unsafe.Pointer(cfNumHttpEnable) != C.NULL && cfNumberGetGoInt(cfNumHttpEnable) > 0 {
