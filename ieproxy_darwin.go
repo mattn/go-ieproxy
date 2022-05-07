@@ -24,14 +24,7 @@ func reloadConf() ProxyConf {
 	return getConf()
 }
 
-func writeConf() {
-	cmd := exec.Command("scutil", "--proxy")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return
-	}
+func parseConf(b []byte) {
 	/*
 		% scutil --proxy
 		<dictionary> {
@@ -54,7 +47,7 @@ func writeConf() {
 	inExceptionsList := false
 	exceptionsList := make([]string, 0)
 	proxyMap := map[string]string{}
-	scanner := bufio.NewScanner(bytes.NewReader(out.Bytes()))
+	scanner := bufio.NewScanner(bytes.NewReader(b))
 	for scanner.Scan() {
 		t := scanner.Text()
 		t = strings.TrimSpace(t)
@@ -114,6 +107,18 @@ func writeConf() {
 		darwinProxyConf.Automatic.PreConfiguredURL = proxyMap["ProxyAutoConfigURLString"]
 		darwinProxyConf.Automatic.Active = true
 	}
+
+}
+
+func writeConf() {
+	cmd := exec.Command("scutil", "--proxy")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return
+	}
+	parseConf(out.Bytes())
 }
 
 // OverrideEnvWithStaticProxy writes new values to the

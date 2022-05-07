@@ -1,3 +1,4 @@
+//go:build darwin
 // +build darwin
 
 package ieproxy
@@ -121,5 +122,43 @@ func TestOverrideEnv(t *testing.T) {
 		if !reflect.DeepEqual(o.callStack, callStack) {
 			t.Error("Got: ", callStack, "Expected: ", o.callStack)
 		}
+	}
+}
+
+func TestParseConf(t *testing.T) {
+	input := `<dictionary> {
+  ExceptionsList : <array> {
+    0 : *.local
+    1 : 169.254/16
+  }
+  FTPPassive : 1
+  HTTPEnable : 1
+  HTTPPort : 8081
+  HTTPProxy : example.jp
+  HTTPSEnable : 1
+  HTTPSPort : 8080
+  HTTPSProxy : example.com
+  HTTPSUser : foo
+  ProxyAutoConfigEnable : 1
+  ProxyAutoConfigURLString : https://example.com/foo.pac
+}`
+	parseConf([]byte(input))
+	if darwinProxyConf.Static.Active != true {
+		t.Error("darwinProxyConf.Static.Active is not true")
+	}
+	if darwinProxyConf.Static.Protocols["http"] != "example.jp:8081" {
+		t.Error("http proxy does not match")
+	}
+	if darwinProxyConf.Static.Protocols["https"] != "example.com:8080" {
+		t.Error("https proxy does not match")
+	}
+	if darwinProxyConf.Automatic.Active != true {
+		t.Error("darwinProxyConf.Automatic.Active is not true")
+	}
+	if darwinProxyConf.Automatic.PreConfiguredURL != "https://example.com/foo.pac" {
+		t.Error("PreConfiguredURL does not match")
+	}
+	if darwinProxyConf.Static.NoProxy != "*.local,169.254/16" {
+		t.Error("NoProxy does not match")
 	}
 }
