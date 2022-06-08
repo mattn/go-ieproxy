@@ -209,38 +209,53 @@ func TestPacfile(t *testing.T) {
 		expected string
 	}{
 		{
-			"direct.pac",
+			serverBase + "direct.pac",
 			"http://google.com",
 			"",
 		},
 		{
-			"404.pac",
+			serverBase + "404.pac",
 			"http://google.com",
 			"",
 		},
 		{
-			"simple.pac",
+			serverBase + "simple.pac",
 			"http://google.com",
 			"127.0.0.1:8",
 		},
 		{
-			"multiple.pac",
+			serverBase + "multiple.pac",
 			"http://google.com",
 			"127.0.0.1:8081",
 		},
 		{
-			"except.pac",
+			serverBase + "except.pac",
 			"http://imgur.com",
 			"localhost:9999",
 		},
 		{
-			"except.pac",
+			serverBase + "except.pac",
+			"http://example.com",
+			"",
+		},
+		{
+			"",
+			"http://example.com",
+			"",
+		},
+		{
+			" ",
+			"http://example.com",
+			"",
+		},
+		{
+			"wrong_format",
 			"http://example.com",
 			"",
 		},
 	}
 	for _, p := range pacSet {
-		proxy.PreConfiguredURL = serverBase + p.pacfile
+		proxy.PreConfiguredURL = p.pacfile
 		out := proxy.FindProxyForURL(p.url)
 		if out != p.expected {
 			t.Error("Got: ", out, "Expected: ", p.expected)
