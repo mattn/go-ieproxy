@@ -13,6 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         go: [1.17, 1.16]
+        cgo_enabled: [0, 1]
 
     steps:
       - uses: actions/checkout@v2
@@ -24,4 +25,6 @@ jobs:
 
       - name: Run tests
         run: go test -v ./...
+        env:
+          CGO_ENABLED: ${{ matrix.go }}
 
