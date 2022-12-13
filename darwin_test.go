@@ -48,6 +48,11 @@ func TestPacfile(t *testing.T) {
 			"127.0.0.1:8",
 		},
 		{
+			serverBase + "simple.pac",
+			"https://google.com",
+			"127.0.0.1:8",
+		},
+		{
 			serverBase + "multiple.pac",
 			"http://google.com",
 			"127.0.0.1:8081",
