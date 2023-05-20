@@ -1,3 +1,6 @@
+//go:build darwin && cgo
+// +build darwin,cgo
+
 package ieproxy
 
 /*
