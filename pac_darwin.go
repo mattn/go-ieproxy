@@ -66,6 +66,20 @@ char* _getProxyUrlFromPac(char* pac, char* reqCs) {
 
 					sprintf(retCString, "%s:%d", host_str, port_int);
 				}
+				if (CFEqual(pxyType, kCFProxyTypeHTTPS)) {
+					CFStringRef host = (CFStringRef)CFDictionaryGetValue(pxy, kCFProxyHostNameKey);
+					CFNumberRef port = (CFNumberRef)CFDictionaryGetValue(pxy, kCFProxyPortNumberKey);
+
+					char host_str[STR_LEN - 16];
+					CFStringGetCString(host, host_str, STR_LEN - 16, kCFStringEncodingUTF8);
+
+					int port_int = 443;
+					if (port) {
+							CFNumberGetValue(port, kCFNumberIntType, &port_int);
+					}
+
+					sprintf(retCString, "%s:%d", host_str, port_int);
+				}
 			}
 		} else {
 			// error
