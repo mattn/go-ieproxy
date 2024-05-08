@@ -1,5 +1,7 @@
-//go:build !windows && (!darwin || !cgo)
-// +build !windows,!darwin !cgo
+//go:build !windows && (!darwin || !cgo) && !ios
+// +build !windows
+// +build !darwin !cgo
+// +build !ios
 
 package ieproxy
 
