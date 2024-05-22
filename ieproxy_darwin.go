@@ -3,19 +3,13 @@
 
 package ieproxy
 
-/*
-#cgo LDFLAGS: -framework CoreFoundation
-#cgo LDFLAGS: -framework CFNetwork
-#include <strings.h>
-#include <CFNetwork/CFProxySupport.h>
-*/
-import "C"
-
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 	"sync"
-	"unsafe"
 )
 
 var once sync.Once
@@ -33,79 +27,101 @@ func reloadConf() ProxyConf {
 	return getConf()
 }
 
-func cfStringGetGoString(cfStr C.CFStringRef) string {
-	retCString := (*C.char)(C.calloc(C.ulong(uint(128)), 1))
-	defer C.free(unsafe.Pointer(retCString))
-
-	C.CFStringGetCString(cfStr, retCString, C.long(128), C.kCFStringEncodingUTF8)
-	return C.GoString(retCString)
-}
-
-func cfNumberGetGoInt(cfNum C.CFNumberRef) int {
-	ret := 0
-	C.CFNumberGetValue(cfNum, C.kCFNumberIntType, unsafe.Pointer(&ret))
-	return ret
-}
-
-func cfArrayGetGoStrings(cfArray C.CFArrayRef) []string {
-	var ret []string
-	for i := 0; i < int(C.CFArrayGetCount(cfArray)); i++ {
-		cfStr := C.CFStringRef(C.CFArrayGetValueAtIndex(cfArray, C.long(i)))
-		if unsafe.Pointer(cfStr) != C.NULL {
-			ret = append(ret, cfStringGetGoString(cfStr))
+func parseConf(b []byte) {
+	/*
+		% scutil --proxy
+		<dictionary> {
+		  ExceptionsList : <array> {
+		    0 : *.local
+		    1 : 169.254/16
+		  }
+		  FTPPassive : 1
+		  HTTPEnable : 1
+		  HTTPPort : 8081
+		  HTTPProxy : example.jp
+		  HTTPSEnable : 1
+		  HTTPSPort : 8080
+		  HTTPSProxy : example.com
+		  HTTPSUser : foo
+		  ProxyAutoConfigEnable : 1
+		  ProxyAutoConfigURLString : example.com/foo.pac
+		}
+	*/
+	inExceptionsList := false
+	exceptionsList := make([]string, 0)
+	proxyMap := map[string]string{}
+	scanner := bufio.NewScanner(bytes.NewReader(b))
+	for scanner.Scan() {
+		t := scanner.Text()
+		t = strings.TrimSpace(t)
+		if inExceptionsList {
+			if strings.Index(t, ":") > 0 {
+				s := strings.SplitN(t, ":", 2)
+				exceptionsList = append(exceptionsList, strings.TrimSpace(s[1]))
+			}
+			if t == "}" {
+				inExceptionsList = false
+			}
+			continue
+		}
+		if strings.Index(t, ":") > 0 {
+			s := strings.SplitN(t, ":", 2)
+			k := strings.TrimSpace(s[0])
+			if k == "ExceptionsList" {
+				inExceptionsList = true
+				continue
+			}
+			v := strings.TrimSpace(s[1])
+			proxyMap[k] = v
 		}
 	}
-	return ret
-}
 
-func writeConf() {
-	cfDictProxy := C.CFDictionaryRef(C.CFNetworkCopySystemProxySettings())
-	defer C.CFRelease(C.CFTypeRef(cfDictProxy))
 	darwinProxyConf = ProxyConf{}
 
-	cfNumHttpEnable := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPEnable)))
-	if unsafe.Pointer(cfNumHttpEnable) != C.NULL && cfNumberGetGoInt(cfNumHttpEnable) > 0 {
+	// http
+	if v, ok := proxyMap["HTTPEnable"]; ok && v == "1" {
 		darwinProxyConf.Static.Active = true
 		if darwinProxyConf.Static.Protocols == nil {
 			darwinProxyConf.Static.Protocols = make(map[string]string)
 		}
-		httpHost := C.CFStringRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPProxy)))
-		httpPort := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPPort)))
-
-		httpProxy := fmt.Sprintf("%s:%d", cfStringGetGoString(httpHost), cfNumberGetGoInt(httpPort))
+		httpProxy := fmt.Sprintf("%s:%s", proxyMap["HTTPProxy"], proxyMap["HTTPPort"])
 		darwinProxyConf.Static.Protocols["http"] = httpProxy
 	}
 
-	cfNumHttpsEnable := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPSEnable)))
-	if unsafe.Pointer(cfNumHttpsEnable) != C.NULL && cfNumberGetGoInt(cfNumHttpsEnable) > 0 {
+	// https
+	if v, ok := proxyMap["HTTPSEnable"]; ok && v == "1" {
 		darwinProxyConf.Static.Active = true
 		if darwinProxyConf.Static.Protocols == nil {
 			darwinProxyConf.Static.Protocols = make(map[string]string)
 		}
-		httpsHost := C.CFStringRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPSProxy)))
-		httpsPort := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesHTTPSPort)))
-
-		httpProxy := fmt.Sprintf("%s:%d", cfStringGetGoString(httpsHost), cfNumberGetGoInt(httpsPort))
+		httpProxy := fmt.Sprintf("%s:%s", proxyMap["HTTPSProxy"], proxyMap["HTTPSPort"])
 		darwinProxyConf.Static.Protocols["https"] = httpProxy
 	}
 
+	// noproxy
 	if darwinProxyConf.Static.Active {
-		cfArrayExceptionList := C.CFArrayRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesExceptionsList)))
-		if unsafe.Pointer(cfArrayExceptionList) != C.NULL {
-			exceptionList := cfArrayGetGoStrings(cfArrayExceptionList)
-			darwinProxyConf.Static.NoProxy = strings.Join(exceptionList, ",")
+		if len(exceptionsList) > 0 {
+			darwinProxyConf.Static.NoProxy = strings.Join(exceptionsList, ",")
 		}
 	}
 
-	cfNumPacEnable := C.CFNumberRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesProxyAutoConfigEnable)))
-	if unsafe.Pointer(cfNumPacEnable) != C.NULL && cfNumberGetGoInt(cfNumPacEnable) > 0 {
-		cfStringPac := C.CFStringRef(C.CFDictionaryGetValue(cfDictProxy, unsafe.Pointer(C.kCFNetworkProxiesProxyAutoConfigURLString)))
-		if unsafe.Pointer(cfStringPac) != C.NULL {
-			pac := cfStringGetGoString(cfStringPac)
-			darwinProxyConf.Automatic.PreConfiguredURL = pac
-			darwinProxyConf.Automatic.Active = true
-		}
+	// pac
+	if v, ok := proxyMap["ProxyAutoConfigEnable"]; ok && v == "1" {
+		darwinProxyConf.Automatic.PreConfiguredURL = proxyMap["ProxyAutoConfigURLString"]
+		darwinProxyConf.Automatic.Active = true
 	}
+
+}
+
+func writeConf() {
+	cmd := exec.Command("scutil", "--proxy")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return
+	}
+	parseConf(out.Bytes())
 }
 
 // OverrideEnvWithStaticProxy writes new values to the
